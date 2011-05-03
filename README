@@ -1,0 +1,7 @@
+Written by Jeroen De Dauw < jeroendedauw@gmail.com >
+Licenced under the GNU GPL v3 or later
+
+Simple Python script to Find Dead Translations in MediaWiki extensions. Dead Translations
+are translations present in an i18n file, but not used anywehere in the actual extension
+code. Do note that this works with simple string matching, and will fail for messages
+that are used by passing message keys that are dynamically build.

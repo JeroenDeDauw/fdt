@@ -8,9 +8,10 @@ Created on May 3, 2011
 @author: Jeroen De Dauw < jeroendedauw@gmail.com >
 '''
 
-import os
-import sys
+from subprocess import Popen
+from subprocess import PIPE
 import getopt
+import sys
 
 class DTFinder(object):
     '''
@@ -26,18 +27,21 @@ class DTFinder(object):
         self._langfile = langfile
         
     def find(self):
-        keys = self.obtainLangKeysFromFile(self.findLangFile())
+        return self._findMissingKeysInDir( self._obtainKeysFromLangFile( self._findLangFile() ) )
         
-    def findLangFile(self):
+    def _findLangFile(self):
         return self._langfile
         
-    def obtainKeysFromLangFile(self, langfile):
-        print os.system( "php getKeys.php" )
+    def _obtainKeysFromLangFile(self, langfile):
+        subProcess = Popen( ["php", "getKeys.php", "../demo.i18n.php"], stdout=PIPE, stderr=PIPE )
+        crOut,crErr = subProcess.communicate()
+        return crOut.split("\n")
         
-    def findKeysInDir(self, keys):    
-        self.findKeysinFile( keys )
+    def _findMissingKeysInDir(self, keys):
+        return keys    
+        #self._findKeysInFile( keys )
     
-    def findKeysinFile(self, keys):
+    def _findKeysInFile(self, keys):
         pass # f = open('demo.ics', 'r')
             
 
@@ -78,13 +82,13 @@ def main():
         else:
             assert False, "unhandled option" 
     
-    if not directory:
-        print "Missing directory option"
-        show_help()
-        sys.exit(1)
+#    if not directory:
+#        print "Missing directory option"
+#        show_help()
+#        sys.exit(1)
     
     finder = DTFinder( directory, langfile )
-    print finder.find().__repr__()
+    print "\n".join( finder.find() )
 
 if __name__ == '__main__':
     main()

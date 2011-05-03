@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.6
 
 
 '''
@@ -8,3 +8,5 @@ Created on May 3, 2011
 @author: Jeroen De Dauw < jeroendedauw@gmail.com >
 '''
 
+import sys
+import getopt

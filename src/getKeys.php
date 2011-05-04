@@ -10,6 +10,12 @@ array_shift( $argv );
 
 require_once $argv[0];
 
-echo implode( "\n", array_keys( $messages['en'] ) );
+$keys = array();
+
+foreach ( array_keys( $messages ) as $lang ) {
+	$keys = array_merge( $keys, array_keys( $messages[$lang] ) );
+}
+
+echo implode( "\n", array_unique( $keys ) );
 
 ?>

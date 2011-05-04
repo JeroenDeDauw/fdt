@@ -28,9 +28,11 @@ class DTFinder(object):
         self._directory = directory
         self._langfile = self._findLangFile( langfile )
         self._dts = []
+        self._originalKeyCount = -1
         
     def find(self):
         keys = self._obtainKeysFromLangFile()
+        self._originalKeyCount = len( keys )
         self._dts = self._findMissingKeysInDir( keys )
         return self._dts
     
@@ -51,6 +53,12 @@ class DTFinder(object):
             
             sys.stdout.write( "" if killLine else line )
         
+    def getOriginalKeyCount(self):
+        if self._originalKeyCount == -1:
+            self.find()
+            
+        return self._originalKeyCount
+    
     def _findLangFile(self, langfile):
         return os.path.join(self._directory, langfile)
         
@@ -68,7 +76,6 @@ class DTFinder(object):
                     keys = self._findKeysInFile(keys, filePath)
                     
                     if len(keys) == 0:
-                        print "found all"
                         return [] # If there are no more keys not accounted for, quite searching.
             
         return keys
@@ -122,21 +129,25 @@ def main():
             assert False, "unhandled option" 
     
     if not directory:
-        directory = "/var/www/extensions/Maps"
+        directory = "/var/www/extensions/SemanticMediaWiki"
 #        print "Missing directory option"
 #        show_help()
 #        sys.exit(1)
 
     if not langfile:
-        langfile = "Maps.i18n.php"
+        langfile = "languages/SMW_Messages.php"
     
     finder = DTFinder( directory, langfile )
     fdts = finder.find()
-    print "Found Dead Translation keys (" + str( len( fdts ) ) + "):\n\n" + "\n".join( fdts )
+    if ( len( fdts ) > 0 ):
+        print "Found Dead Translation keys (%s of %s):\n\n" % ( len( fdts ), finder.getOriginalKeyCount() ) + "\n".join( fdts )
+        
+        if ( "%s" % input( "Remove the Found Dead Translation keys? (y/n) " ) ) == "y":
+            finder.fix()
+    else: 
+        print "Did not Find Dead Translation keys! :)"
     
-    if ( "%s" % input( "Remove the Found Dead Translation keys? (y/n) " ) ) == "y":
-        finder.fix()
-        print "Done."
+    print "Done."
 
 if __name__ == '__main__':
     main()

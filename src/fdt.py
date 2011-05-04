@@ -44,7 +44,7 @@ class DTFinder(object):
 
             if not isMessageContinuation:
                 for key in self._dts:
-                    if key in line:
+                    if "'" + key + "' => " in line:
                         hasKey = True
                         break
             
@@ -94,7 +94,7 @@ class DTFinder(object):
 
 def show_help():
     print """
-fdt.py -d directory [-l langfile] [-? help]
+fdt.py -d directory -l langfile [-? help]
 
 Finds Dead Translations in a MediaWiki extension.
 
@@ -129,20 +129,21 @@ def main():
             assert False, "unhandled option" 
     
     if not directory:
-        directory = "/var/www/extensions/SemanticMediaWiki"
-#        print "Missing directory option"
-#        show_help()
-#        sys.exit(1)
+        print "Missing directory option"
+        show_help()
+        sys.exit(1)
 
     if not langfile:
-        langfile = "languages/SMW_Messages.php"
+        print "Missing langfile option"
+        show_help()
+        sys.exit(1)
     
     finder = DTFinder( directory, langfile )
     fdts = finder.find()
     if ( len( fdts ) > 0 ):
         print "Found Dead Translation keys (%s of %s):\n\n" % ( len( fdts ), finder.getOriginalKeyCount() ) + "\n".join( fdts )
         
-        if ( "%s" % input( "Remove the Found Dead Translation keys? (y/n) " ) ) == "y":
+        if raw_input( "Remove the Found Dead Translation keys? (y/n) " ) == "y":
             finder.fix()
     else: 
         print "Did not Find Dead Translation keys! :)"

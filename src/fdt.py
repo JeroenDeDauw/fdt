@@ -13,6 +13,7 @@ from subprocess import PIPE
 import getopt
 import sys
 import os
+import fileinput
 
 class DTFinder(object):
     '''
@@ -25,27 +26,45 @@ class DTFinder(object):
         '''
         
         self._directory = directory
-        self._langfile = langfile
+        self._langfile = self._findLangFile( langfile )
+        self._dts = []
         
     def find(self):
-        langfile = self._findLangFile()
-        keys = self._obtainKeysFromLangFile( langfile )
-        return self._findMissingKeysInDir( keys, langfile )
+        keys = self._obtainKeysFromLangFile()
+        self._dts = self._findMissingKeysInDir( keys )
+        return self._dts
+    
+    def fix(self):
+        isMessageContinuation = False
+
+        for line in fileinput.input(self._langfile, inplace=1):
+            hasKey = False
+
+            if not isMessageContinuation:
+                for key in self._dts:
+                    if key in line:
+                        hasKey = True
+                        break
+            
+            killLine = hasKey or isMessageContinuation
+            isMessageContinuation = killLine and not line.endswith( ',\n' )
+            
+            sys.stdout.write( "" if killLine else line )
         
-    def _findLangFile(self):
-        return os.path.join(self._directory, self._langfile)
+    def _findLangFile(self, langfile):
+        return os.path.join(self._directory, langfile)
         
-    def _obtainKeysFromLangFile(self, langfile):
-        subProcess = Popen( ["php", "getKeys.php", langfile], stdout=PIPE, stderr=PIPE )
+    def _obtainKeysFromLangFile(self):
+        subProcess = Popen( ["php", "getKeys.php", self._langfile], stdout=PIPE, stderr=PIPE )
         crOut,crErr = subProcess.communicate()
         return crOut.split("\n")
         
-    def _findMissingKeysInDir(self, keys, langfile):
+    def _findMissingKeysInDir(self, keys):
         for subdir, dirs, files in os.walk(self._directory):
             for file in files:
                 filePath = os.path.join(subdir, file)
 
-                if filePath != langfile and filePath.endswith('.php') and not filePath.startswith('.') and not os.path.islink(filePath):
+                if filePath != self._langfile and filePath.endswith('.php') and not filePath.startswith('.') and not os.path.islink(filePath):
                     keys = self._findKeysInFile(keys, filePath)
                     
                     if len(keys) == 0:
@@ -114,6 +133,10 @@ def main():
     finder = DTFinder( directory, langfile )
     fdts = finder.find()
     print "Found Dead Translation keys (" + str( len( fdts ) ) + "):\n\n" + "\n".join( fdts )
+    
+    if ( "%s" % input( "Remove the Found Dead Translation keys? (y/n) " ) ) == "y":
+        finder.fix()
+        print "Done."
 
 if __name__ == '__main__':
     main()

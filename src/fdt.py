@@ -16,14 +16,18 @@ import os
 import fileinput
 
 class DTFinder(object):
-    '''
-    Class to find dead translations.
-    '''
+    """
+    Class to find dead translation keys.
+    """
     
     def __init__(self, directory, langfile):
-        '''
-        Constructor
-        '''
+        """
+        Creates a new instance of DTFinder.
+        
+        Arguments:
+        directory -- The directory in which to look for translation keys.
+        langfile -- The file in which the translation key definitions can be found, relative to the directory argument.
+        """
         
         self._directory = directory
         self._langfile = self._findLangFile( langfile )
@@ -31,12 +35,14 @@ class DTFinder(object):
         self._originalKeyCount = -1
         
     def find(self):
+        """Find, store and return the Dead Translation keys."""
         keys = self._obtainKeysFromLangFile()
         self._originalKeyCount = len( keys )
         self._dts = self._findMissingKeysInDir( keys )
         return self._dts
     
     def fix(self):
+        """Remove the Found Dead Translation keys from the i18n file."""
         isMessageContinuation = False
 
         for line in fileinput.input(self._langfile, inplace=1):
@@ -54,6 +60,7 @@ class DTFinder(object):
             sys.stdout.write( "" if killLine else line )
         
     def getOriginalKeyCount(self):
+        """Returns the total amount of translation keys in the language file before any modifications where made to it."""
         if self._originalKeyCount == -1:
             self.find()
             

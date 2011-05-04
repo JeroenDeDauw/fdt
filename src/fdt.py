@@ -78,7 +78,16 @@ class DTFinder(object):
                     if len(keys) == 0:
                         return [] # If there are no more keys not accounted for, quite searching.
             
-        return keys
+        return self._filterCommonConcats( keys )
+    
+    def _filterCommonConcats(self, keys):
+        filtered = []
+        
+        for key in keys:
+            if not key.startswith( 'right-' ):
+                filtered.append( key )
+            
+        return filtered
     
     def _findKeysInFile(self, keys, file):
         f = open(file, 'r')

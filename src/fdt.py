@@ -104,6 +104,8 @@ Finds Dead Translations in a MediaWiki extension.
                 The name of the language (i18n) file.
   -?, --help
                 Shows this help.
+                
+Example: python fdt.py -d ~/root/extensions/Maps -l Maps.i18n.php
     """
 
 def main():
